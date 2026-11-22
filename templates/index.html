@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPE-Trans | Low-Resource Neural Machine Translation</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-language text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        BPE-Trans
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Seq2Seq NMT</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Low-Resource Indigenous Languages Translation</p>
+                </div>
+            </div>
+
+            <!-- Header Links & Badges -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 text-xs bg-slate-800/60 border border-slate-700/60 rounded-lg px-3 py-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300 font-medium" id="system-status">Pipeline Active (CPU/GPU)</span>
+                </div>
+                <a href="#evaluation-section" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700">
+                    <i class="fa-solid fa-chart-pie mr-1.5 text-indigo-400"></i> Metrics (BLEU/chrF/TER)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+        
+        <!-- Hero Header -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 p-6 md:p-8 shadow-2xl">
+            <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="max-w-3xl space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">CLNLP Mini Project 2</span>
+                    <span class="text-slate-600">&bull;</span>
+                    <span class="text-xs text-slate-400">Full Pipeline: Preprocessing &rarr; BPE Extraction &rarr; Transformer &rarr; Multi-Metric Evaluation</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Neural Machine Translation for Low-Resource North-East Indian Dialects
+                </h2>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    Combines Unicode NFC normalization, Subword Byte-Pair Encoding (BPE), compact PyTorch Seq2Seq Transformer, and evaluation across <strong>BLEU</strong>, <strong>chrF++</strong>, and <strong>TER (Translation Edit Rate)</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3-Pillar Pipeline Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Pillar 1 -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 space-y-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm mb-3">
+                    <i class="fa-solid fa-filter"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100">1. Data Processing & Features</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Unicode normalization (NFC), punctuation detachment, morphological tokenization, and linguistic features (Type-Token Ratio, script character density).
+                </p>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 space-y-2">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-sm mb-3">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100">2. Deep Learning Model</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Custom Seq2Seq Multi-Head Self-Attention Transformer with Sinusoidal Positional Encoding & subword BPE to overcome Out-Of-Vocabulary (OOV) bottlenecks.
+                </p>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 space-y-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm mb-3">
+                    <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100">3. Rigorous Evaluation</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Evaluated with <strong>BLEU</strong> (precision n-grams), <strong>chrF</strong> (character n-grams for agglutinative dialects), and <strong>TER</strong> (edit distance).
+                </p>
+            </div>
+        </div>
+
+        <!-- Translation Workbench Card -->
+        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl overflow-hidden backdrop-blur-sm">
+            <!-- Language Selection Toolbar -->
+            <div class="border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 bg-slate-900/50">
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Source</span>
+                        <div class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-700">
+                            English (en)
+                        </div>
+                    </div>
+
+                    <div class="text-slate-600">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Target Dialect</span>
+                        <select id="target-lang-select" class="bg-slate-800 hover:bg-slate-750 text-indigo-300 text-xs font-semibold border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                            <option value="karbi">Karbi (Category II)</option>
+                            <option value="nagamese">Nagamese (Category II)</option>
+                            <option value="kokborok">Kokborok (Category II)</option>
+                            <option value="bodo">Bodo (Category II)</option>
+                            <option value="tagin">Tagin (Category II)</option>
+                            <option value="mizo">Mizo (Category I)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button id="sample-btn" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all border border-slate-700 flex items-center gap-1.5">
+                        <i class="fa-regular fa-lightbulb text-amber-400"></i> Load Sample
+                    </button>
+                    <button id="clear-btn" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-all border border-slate-700">
+                        <i class="fa-solid fa-eraser"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Translation Panes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+                <!-- Source Input Pane -->
+                <div class="p-6 flex flex-col justify-between min-h-[220px]">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                            <span>Input Sentence (English)</span>
+                            <span id="char-counter" class="text-slate-500 font-normal">0 / 300 chars</span>
+                        </label>
+                        <textarea id="source-input" rows="5" class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed resize-none" placeholder="Type or paste an English sentence to translate into the low-resource dialect..."></textarea>
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-xs text-slate-400">
+                            <i class="fa-solid fa-bolt text-indigo-400"></i>
+                            <span id="latency-display">Latency: -- ms</span>
+                        </div>
+                        <button id="translate-btn" class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2">
+                            <span id="btn-spinner" class="hidden"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                            <span>Translate</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Target Output Pane -->
+                <div class="p-6 flex flex-col justify-between bg-slate-950/30 min-h-[220px]">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold text-slate-400">Target Translation</label>
+                            <div class="flex items-center space-x-2">
+                                <span id="confidence-badge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    Conf: --%
+                                </span>
+                                <button id="copy-btn" title="Copy Translation" class="text-slate-500 hover:text-slate-200 text-xs transition-colors p-1">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="target-output" class="w-full min-h-[120px] p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-200 text-sm leading-relaxed select-text flex items-center justify-center text-slate-500 italic">
+                            Translation will appear here...
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-between text-xs text-slate-500">
+                        <div class="flex items-center space-x-1.5">
+                            <i class="fa-solid fa-layer-group text-slate-400"></i>
+                            <span id="target-lang-label">Dialect: Karbi</span>
+                        </div>
+                        <div id="status-pill" class="text-xs text-slate-400">Model: Ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subword BPE & Feature Inspector -->
+            <div class="border-t border-slate-800 bg-slate-950/70 p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-dna text-purple-400"></i>
+                        Feature Extraction & Subword BPE Inspector (Handling Out-of-Vocabulary)
+                    </span>
+                    <span class="text-[11px] text-slate-500">Live text preprocessing & token segmentation</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Source Subwords -->
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="font-semibold text-slate-400">Source Subwords (English):</span>
+                            <span id="src-feat-summary" class="text-slate-500 font-mono text-[10px]"></span>
+                        </div>
+                        <div id="src-subwords-container" class="flex flex-wrap gap-1.5 min-h-[32px] items-center text-xs text-slate-500 italic">
+                            No tokens processed yet.
+                        </div>
+                    </div>
+
+                    <!-- Target Subwords -->
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="font-semibold text-slate-400">Target Subwords (Native):</span>
+                            <span id="tgt-feat-summary" class="text-slate-500 font-mono text-[10px]"></span>
+                        </div>
+                        <div id="tgt-subwords-container" class="flex flex-wrap gap-1.5 min-h-[32px] items-center text-xs text-slate-500 italic">
+                            No tokens generated yet.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation & Metrics Section -->
+        <div id="evaluation-section" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                        Model Evaluation & Performance Benchmarks
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Comprehensive evaluation metrics: <strong>BLEU</strong> (n-gram precision), <strong>chrF</strong> (character n-gram F-score), and <strong>TER</strong> (Translation Edit Rate).
+                    </p>
+                </div>
+                <span class="text-xs text-slate-400" id="trained-count">Checking checkpoints...</span>
+            </div>
+
+            <!-- Metrics Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3 rounded-l-lg">Language Pair</th>
+                            <th class="p-3">Vocab Size (Src/Tgt)</th>
+                            <th class="p-3">BLEU Score</th>
+                            <th class="p-3">chrF++ Score</th>
+                            <th class="p-3">TER (Edit Rate)</th>
+                            <th class="p-3 rounded-r-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="models-table-body" class="divide-y divide-slate-800/60">
+                        <tr>
+                            <td colspan="6" class="p-4 text-center text-slate-500 italic">Scanning trained checkpoints...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Train Model on Other Low-Resource Languages -->
+            <div class="pt-3 flex flex-wrap items-center justify-between gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-200">Train Model for Any Provided Low-Resource Dialect:</p>
+                    <p class="text-[11px] text-slate-400">Automatically runs preprocessing, feature extraction, BPE vocabulary creation, and multi-metric evaluation.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <select id="train-lang-select" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 border border-slate-700 focus:outline-none">
+                        <option value="nagamese">Nagamese (Category II)</option>
+                        <option value="kokborok">Kokborok (Category II)</option>
+                        <option value="bodo">Bodo (Category II)</option>
+                        <option value="tagin">Tagin (Category II)</option>
+                        <option value="karbi">Karbi (Category II)</option>
+                        <option value="mizo">Mizo (Category I)</option>
+                    </select>
+                    <button id="start-train-btn" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-play text-[10px]"></i>
+                        <span>Train & Evaluate</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-xs text-slate-500">
+        <p>CLNLP Mini Project 2 &bull; Low-Resource Neural Machine Translation Pipeline</p>
+    </footer>
+
+    <!-- Interactive Script -->
+    <script>
+        const samplePhrases = {
+            'karbi': 'However, Limbani’s long-time coach Digvijay Singh Rathwa says he never had a natural in-swinger and had to work to master it last year.',
+            'nagamese': 'The Indian independence movement was a significant period in Indian history, marked by a fervent desire for freedom from British rule.',
+            'kokborok': 'These are the names of the sons of Israel who went to Egypt with Jacob, each with his family:',
+            'bodo': 'The Indian independence movement was a significant period in Indian history.',
+            'tagin': 'I have seen it myself',
+            'mizo': 'He is the Lord our God ; his judgments are in all the earth .'
+        };
+
+        const targetSelect = document.getElementById('target-lang-select');
+        const sourceInput = document.getElementById('source-input');
+        const targetOutput = document.getElementById('target-output');
+        const translateBtn = document.getElementById('translate-btn');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const charCounter = document.getElementById('char-counter');
+        const latencyDisplay = document.getElementById('latency-display');
+        const confidenceBadge = document.getElementById('confidence-badge');
+        const srcSubwords = document.getElementById('src-subwords-container');
+        const tgtSubwords = document.getElementById('tgt-subwords-container');
+        const sampleBtn = document.getElementById('sample-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const targetLangLabel = document.getElementById('target-lang-label');
+        const modelsTableBody = document.getElementById('models-table-body');
+        const trainedCount = document.getElementById('trained-count');
+        const startTrainBtn = document.getElementById('start-train-btn');
+        const trainLangSelect = document.getElementById('train-lang-select');
+
+        sourceInput.addEventListener('input', () => {
+            charCounter.textContent = `${sourceInput.value.length} / 300 chars`;
+        });
+
+        sampleBtn.addEventListener('click', () => {
+            const currentLang = targetSelect.value;
+            sourceInput.value = samplePhrases[currentLang] || 'The leader spoke to the people about freedom and work.';
+            charCounter.textContent = `${sourceInput.value.length} / 300 chars`;
+        });
+
+        clearBtn.addEventListener('click', () => {
+            sourceInput.value = '';
+            targetOutput.innerHTML = '<span class="text-slate-500 italic">Translation will appear here...</span>';
+            charCounter.textContent = '0 / 300 chars';
+            confidenceBadge.classList.add('hidden');
+            srcSubwords.innerHTML = '<span class="text-slate-500 italic">No tokens processed yet.</span>';
+            tgtSubwords.innerHTML = '<span class="text-slate-500 italic">No tokens generated yet.</span>';
+        });
+
+        copyBtn.addEventListener('click', () => {
+            const text = targetOutput.innerText;
+            if (text && !text.includes('Translation will appear here')) {
+                navigator.clipboard.writeText(text);
+                copyBtn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i>';
+                setTimeout(() => { copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>'; }, 1500);
+            }
+        });
+
+        targetSelect.addEventListener('change', () => {
+            const selectedText = targetSelect.options[targetSelect.selectedIndex].text;
+            targetLangLabel.textContent = `Dialect: ${selectedText.split(' ')[0]}`;
+        });
+
+        function renderTokens(container, tokens, colorClass) {
+            if (!tokens || tokens.length === 0) {
+                container.innerHTML = '<span class="text-slate-500 italic">None</span>';
+                return;
+            }
+            container.innerHTML = tokens.map(tok => `
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono ${colorClass} border">
+                    ${tok}
+                </span>
+            `).join('');
+        }
+
+        async function fetchModels() {
+            try {
+                const res = await fetch('/api/models');
+                const data = await res.json();
+                if (data.models && data.models.length > 0) {
+                    trainedCount.textContent = `${data.models.length} model(s) ready`;
+                    modelsTableBody.innerHTML = data.models.map(m => {
+                        const mMetrics = m.metrics || {};
+                        const bleu = mMetrics.bleu !== undefined ? mMetrics.bleu : (m.bleu || 0.0);
+                        const chrf = mMetrics.chrf !== undefined ? mMetrics.chrf : '--';
+                        const ter = mMetrics.ter !== undefined ? mMetrics.ter + '%' : '--';
+
+                        return `
+                            <tr class="hover:bg-slate-800/40 transition-colors">
+                                <td class="p-3 font-semibold text-white uppercase">${m.lang_key}</td>
+                                <td class="p-3 font-mono text-indigo-300">${m.src_vocab_size || '--'} / ${m.tgt_vocab_size || '--'}</td>
+                                <td class="p-3 font-semibold text-emerald-400">${bleu}</td>
+                                <td class="p-3 font-semibold text-purple-400">${chrf}</td>
+                                <td class="p-3 font-semibold text-amber-400">${ter}</td>
+                                <td class="p-3">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Active
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    trainedCount.textContent = '0 models ready';
+                    modelsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="p-4 text-center text-slate-500 italic">No model trained yet. Click "Train & Evaluate" below.</td>
+                        </tr>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function doTranslation() {
+            const text = sourceInput.value.trim();
+            if (!text) return;
+
+            const lang = targetSelect.value;
+            translateBtn.disabled = true;
+            btnSpinner.classList.remove('hidden');
+            const startTime = performance.now();
+
+            try {
+                const res = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text: text, lang_key: lang})
+                });
+                const elapsed = Math.round(performance.now() - startTime);
+                latencyDisplay.textContent = `Latency: ${elapsed} ms`;
+
+                const data = await res.json();
+                if (data.error) {
+                    targetOutput.innerHTML = `<span class="text-rose-400">${data.error}</span>`;
+                } else {
+                    targetOutput.innerHTML = `<span class="text-slate-100 font-medium">${data.translated_text || '(Empty output)'}</span>`;
+                    confidenceBadge.textContent = `Conf: ${data.confidence}%`;
+                    confidenceBadge.classList.remove('hidden');
+
+                    renderTokens(srcSubwords, data.source_tokens, 'bg-indigo-950/60 text-indigo-300 border-indigo-700/50');
+                    renderTokens(tgtSubwords, data.target_tokens, 'bg-purple-950/60 text-purple-300 border-purple-700/50');
+                }
+            } catch (err) {
+                targetOutput.innerHTML = `<span class="text-rose-400">Connection error: ${err.message}</span>`;
+            } finally {
+                translateBtn.disabled = false;
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        translateBtn.addEventListener('click', doTranslation);
+        sourceInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                doTranslation();
+            }
+        });
+
+        startTrainBtn.addEventListener('click', async () => {
+            const lang = trainLangSelect.value;
+            startTrainBtn.disabled = true;
+            startTrainBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Training & Evaluating...';
+            try {
+                const res = await fetch('/api/train', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({lang_key: lang})
+                });
+                const data = await res.json();
+                alert(data.message || 'Training triggered!');
+                setTimeout(fetchModels, 4000);
+            } catch (err) {
+                alert('Training request failed: ' + err.message);
+            } finally {
+                startTrainBtn.disabled = false;
+                startTrainBtn.innerHTML = '<i class="fa-solid fa-play text-[10px]"></i><span>Train & Evaluate</span>';
+            }
+        });
+
+        fetchModels();
+    </script>
+</body>
+</html>
